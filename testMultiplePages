@@ -1,0 +1,44 @@
+from tkinter import filedialog
+
+import music21
+import os
+import subprocess
+
+def display_musicxml_in_pages(input_path, output_dir):
+    # Load the MusicXML file
+    score = music21.converter.parse(input_path)
+
+    # Set the number of measures per page (you can adjust this)
+    measures_per_page = 2
+
+    # Split the score into pages
+    parts = score.getElementsByClass('Part')
+    page_count = len(parts[0].getElementsByClass('Measure')) // measures_per_page
+
+    for page_num in range(page_count):
+        # Create a new stream for the current page
+        page_score = music21.stream.Stream()
+
+        # Add measures to the page
+        for part in parts:
+            measures = part.getElementsByClass('Measure')[page_num * measures_per_page:(page_num + 1) * measures_per_page]
+            page_score.append(measures)
+
+        # Generate a filename for the page
+        output_file = os.path.join(output_dir, f'page_{page_num + 1}.mxl')
+
+        # Save the page as a separate MusicXML file
+        page_score.write('musicxml', output_file)
+
+        
+
+input_path = filedialog.askopenfilename(
+    title="Select a MusicXML file",
+    filetypes=(("MusicXML files", "*.mxl"), ("All files", "*.*"))
+)
+output_dir = "./testPages/"  # Replace with the directory where you want to save the pages
+
+# Ensure the output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
+display_musicxml_in_pages(input_path, output_dir)

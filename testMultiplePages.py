@@ -31,16 +31,14 @@ def divide_musicxml_in_pages(input_path, measures_per_page = 20):
 
     return score_pages
 
-def test_multiple_pages(input_path):
+def _test_multiple_pages(input_path):
     score_pages = divide_musicxml_in_pages(input_path, 5)
     print(len(score_pages))
     score_pages[0].show()
-    score_pages[1].show()
-    score_pages[2].show()
 
 
 input_path = filedialog.askopenfilename(
     title="Select a MusicXML file",
     filetypes=(("MusicXML files", "*.mxl"), ("All files", "*.*"))
 )
-test_multiple_pages(input_path)
+_test_multiple_pages(input_path)

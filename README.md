@@ -16,3 +16,6 @@ Ajustes menores a testScoreHighlight
 
 Commit 4
 Empezar a crear View y Handler. Ajustar metodos testScore highlight para que reajuste el color despues de colorear el compas deseado. Crear clase AppDacapo que es el root del view.
+
+Commit 5
+Inyectar modulos de separar scores en paginas, colorear scores y convertir scores en imagenes al Handler y crear las funciones del handler que guardan el score en paginas y las imagenes coloreadas de las paginas.

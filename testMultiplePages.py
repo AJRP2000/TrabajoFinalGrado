@@ -14,7 +14,7 @@ def divide_musicxml_in_pages(input_path, measures_per_page = 20):
 
     for page_num in range(page_count):
         # Create a new stream for the current page
-        page_score = music21.stream.Stream()
+        page_score = music21.stream.Score()
 
         # Add measures to the page
         for part in parts:

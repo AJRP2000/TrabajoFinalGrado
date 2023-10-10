@@ -1,4 +1,5 @@
 from tkinter import ttk
+from tkinter import filedialog
 import DaCapoHandler
 
 class DaCapo_View(ttk.Frame):
@@ -24,7 +25,7 @@ class DaCapo_View(ttk.Frame):
     
     # Function to select a MusicXML file
     def __select_musicxml_file(self):
-        file_path = ttk.filedialog.askopenfilename(
+        file_path = filedialog.askopenfilename(
             title="Select a MusicXML file",
             filetypes=(("MusicXML files", "*.mxl"), ("All files", "*.*"))
         )
@@ -35,7 +36,7 @@ class DaCapo_View(ttk.Frame):
     
     # Function to select a MP3 file
     def __select_mp3_file(self):
-        file_path = ttk.filedialog.askopenfilename(
+        file_path = filedialog.askopenfilename(
             title="Select a MP3 file",
             filetypes=(("MP3 files", "*.mp3"), ("All files", "*.*"))
         )
@@ -46,5 +47,6 @@ class DaCapo_View(ttk.Frame):
         
     # Function to display an image
     def display_image(self, image):
-        pass
-        
+        self.image = ttk.Label(self, image=image)
+        self.image.grid(row=3, column=0, columnspan=3)
+        self.mainloop()

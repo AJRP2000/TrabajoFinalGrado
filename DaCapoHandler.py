@@ -4,6 +4,8 @@ import math
 import os
 import glob
 from PIL import ImageTk, Image
+import librosa
+from sound_to_midi.monophonic import wave_to_midi
 
 
 
@@ -14,6 +16,7 @@ class DaCapo_Handler:
     #(display_music_sheet)
     # Function to receive the path to a MusicXML file, save it as a Score and trigger display.
     def retrieve_musicXML_file(self, file_path):
+        self.dacapo_view.create_loading_window("Cargando...")
         self.score = music21.converter.parse(file_path)
         measures_per_page = 20
         self.score_pages = self.__divide_musicxml_in_pages(self.score, measures_per_page)
@@ -21,10 +24,24 @@ class DaCapo_Handler:
     
         # Load the image using Tkinter
         image = self.__create_image(self.score_pages_paths[0][0])
+        self.dacapo_view.delete_loading_window()
         self.dacapo_view.display_image(image)
+        self.dacapo_view.mainloop()
     
     def retrieve_mp3_file(self, file_path):
-        pass
+        self.dacapo_view.create_loading_window("Cargando Archivo Mp3...")
+        file_in = file_path
+        file_out = "./midiFiles/midiAudio.mid"
+        y, sr = librosa.load(file_in, sr=None)
+        print("Archivo MP3 Cargado")
+        self.dacapo_view.delete_loading_window()
+        self.dacapo_view.create_loading_window("Procesando archivo...")
+        midi = wave_to_midi(y, sr)
+        print("Conversion Terminada")
+        with open (file_out, 'wb') as f:
+            midi.writeFile(f)
+        print("Archivo Guardado")
+        self.dacapo_view.delete_loading_window()
     
     #Function that receives a list of score pages and creates 
     def __create_png_list_scores(self, score_pages, measures_per_page):

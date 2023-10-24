@@ -1,5 +1,5 @@
-from tkinter import ttk
-from tkinter import filedialog
+from tkinter import ttk, Toplevel
+from tkinter import filedialog, messagebox
 import DaCapoHandler
 
 class DaCapo_View(ttk.Frame):
@@ -22,7 +22,6 @@ class DaCapo_View(ttk.Frame):
     
     
     
-    
     # Function to select a MusicXML file
     def __select_musicxml_file(self):
         file_path = filedialog.askopenfilename(
@@ -32,7 +31,7 @@ class DaCapo_View(ttk.Frame):
         if file_path:
             self.handler.retrieve_musicXML_file(file_path)
         else:
-            ttk.messagebox.showinfo("Alert", "No se ha seleccionado un archivo!")
+            messagebox.showinfo("Alert", "No se ha seleccionado un archivo!")
     
     # Function to select a MP3 file
     def __select_mp3_file(self):
@@ -43,10 +42,22 @@ class DaCapo_View(ttk.Frame):
         if file_path:
             self.handler.retrieve_mp3_file(file_path)
         else:
-            ttk.messagebox.showinfo("Alert", "No se ha seleccionado un archivo!")
+            messagebox.showinfo("Alert", "No se ha seleccionado un archivo!")
         
     # Function to display an image
     def display_image(self, image):
         self.image = ttk.Label(self, image=image)
         self.image.grid(row=3, column=0, columnspan=3)
-        self.mainloop()
+        self.update()
+        
+        
+    def create_loading_window(self, texto):
+        self.loading_window = Toplevel(self)
+        self.loading_window.title("Cargando...")
+        self.loading_window.label = ttk.Label(self.loading_window, text=texto, font=("Helvetica", 18))
+        self.loading_window.label.grid(row=0, column=0)
+        self.update()
+    
+    def delete_loading_window(self):
+        self.loading_window.destroy()
+        self.loading_window = None

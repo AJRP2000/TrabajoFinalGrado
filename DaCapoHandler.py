@@ -6,7 +6,7 @@ import glob
 from PIL import ImageTk, Image
 import librosa
 from sound_to_midi.monophonic import wave_to_midi
-
+import time
 
 
 class DaCapo_Handler:
@@ -41,6 +41,9 @@ class DaCapo_Handler:
         with open (file_out, 'wb') as f:
             midi.writeFile(f)
         print("Archivo Guardado")
+        self.dacapo_view.delete_loading_window()
+        self.dacapo_view.create_loading_window("El archivo ha sido cargado con exito!")
+        time.sleep(1)
         self.dacapo_view.delete_loading_window()
     
     #Function that receives a list of score pages and creates 

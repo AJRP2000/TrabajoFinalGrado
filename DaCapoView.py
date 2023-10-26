@@ -19,6 +19,9 @@ class DaCapo_View(ttk.Frame):
         
         self.label_prototype = ttk.Label(self, text='The current version is a prototype. Many functions are yet to be implemented. As of now the app can only function with songs played at a 120 bpm and musicXML files that have a set 120 bpm.')
         self.label_prototype.grid(row=1, column=0, columnspan=3)    
+        
+        self.boton_reproducir = ttk.Button(self, text="Reproducir Audio", command=self.__play_mp3_file)
+        self.boton_reproducir.grid(row=2, column=0, columnspan=3)   
     
     
     
@@ -44,6 +47,10 @@ class DaCapo_View(ttk.Frame):
         else:
             messagebox.showinfo("Alert", "No se ha seleccionado un archivo!")
         
+    #Function to play the MP3 File
+    def __play_mp3_file(self):
+        pass
+    
     # Function to display an image
     def display_image(self, image):
         self.image = ttk.Label(self, image=image)

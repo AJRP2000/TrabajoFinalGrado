@@ -18,12 +18,14 @@ class DaCapo_Handler:
     def retrieve_musicXML_file(self, file_path):
         self.dacapo_view.create_loading_window("Cargando...")
         self.score = music21.converter.parse(file_path)
+        self.__write_score_to_midi(self.score, './midiFiles/midiPartitura.mid')
         measures_per_page = 20
         self.score_pages = self.__divide_musicxml_in_pages(self.score, measures_per_page)
         self.score_pages_paths = self.__create_png_list_scores(self.score_pages, measures_per_page)    
     
         # Load the image using Tkinter
         image = self.__create_image(self.score_pages_paths[0][0])
+        
         self.dacapo_view.delete_loading_window()
         self.dacapo_view.display_image(image)
         self.dacapo_view.mainloop()
@@ -115,6 +117,19 @@ class DaCapo_Handler:
             score_pages.append(page_score)
 
         return score_pages
+    
+    def __write_score_to_midi(self, score, output_filename):
+        # Write the MIDI file
+        score.write('midi', output_filename)
+        #Sets the default BPM to be 120
+        self.score_bpm = 120
+        for element in score.flat:
+            if isinstance(element, tempo.MetronomeMark):
+                #Sets bpm to be the one written in the score
+                self.score_bpm  = element.number
+
+        self.midi_partitura_path = output_filename
+        #self.midi_partitura = 
     
     #Deletes all files that aren't pngs in the ImagePages folder
     def __delete_files_except_png(self, folder_path):

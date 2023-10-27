@@ -1,6 +1,7 @@
 from tkinter import ttk, Toplevel
 from tkinter import filedialog, messagebox
 import DaCapoHandler
+from PIL import ImageTk, Image
 
 class DaCapo_View(ttk.Frame):
     
@@ -11,8 +12,14 @@ class DaCapo_View(ttk.Frame):
         self.boton_musicXML = ttk.Button(self, text="Open MusicXML File", command=self.__select_musicxml_file)
         self.boton_musicXML.grid(row=0, column=0)
         
-        self.label_DaCapo = ttk.Label(self, text='DaCapo Sheet Viewer')
-        self.label_DaCapo.grid(row=0, column=1) 
+        logo_image = Image.open("DaCapoLogo.png")
+        logo_image = logo_image.resize(size=(400, 130))
+
+        # Convert the PIL image to a Tkinter PhotoImage
+        logo = ImageTk.PhotoImage(logo_image)
+        self.logo = ttk.Label(self, image=logo)
+        self.logo.image = logo #Prevents the image from being garbage collected
+        self.logo.grid(row=0, column=1) 
         
         self.boton_mp3 = ttk.Button(self, text="Open MP3 File", command=self.__select_mp3_file)
         self.boton_mp3.grid(row=0, column=2)
@@ -55,6 +62,7 @@ class DaCapo_View(ttk.Frame):
     def display_image(self, image):
         self.image = ttk.Label(self, image=image)
         self.image.grid(row=3, column=0, columnspan=3)
+        self.image.image = image #Prevents the image from being garbage collected
         self.update()
         
         

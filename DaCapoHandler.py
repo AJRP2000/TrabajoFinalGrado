@@ -28,7 +28,6 @@ class DaCapo_Handler:
         
         self.dacapo_view.delete_loading_window()
         self.dacapo_view.display_image(image)
-        self.dacapo_view.mainloop()
     
     def retrieve_mp3_file(self, file_path):
         self.dacapo_view.create_loading_window("Cargando Archivo Mp3...")

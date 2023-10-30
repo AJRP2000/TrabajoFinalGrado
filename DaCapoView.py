@@ -24,13 +24,11 @@ class DaCapo_View(ttk.Frame):
         self.boton_mp3 = ttk.Button(self, text="Open MP3 File", command=self.__select_mp3_file)
         self.boton_mp3.grid(row=0, column=2)
         
-        self.label_prototype = ttk.Label(self, text='The current version is a prototype. Many functions are yet to be implemented. As of now the app can only function with songs played at a 120 bpm and musicXML files that have a set 120 bpm.')
+        self.label_prototype = ttk.Label(self, text='The current version is a prototype. Many functions are yet to be implemented. As of now the app can only function if the MusicXML file and the mp3 file have the same bpm.')
         self.label_prototype.grid(row=1, column=0, columnspan=3)    
         
         self.boton_reproducir = ttk.Button(self, text="Reproducir Audio", command=self.__play_mp3_file)
         self.boton_reproducir.grid(row=2, column=0, columnspan=3)   
-    
-    
     
     # Function to select a MusicXML file
     def __select_musicxml_file(self):
@@ -56,7 +54,7 @@ class DaCapo_View(ttk.Frame):
         
     #Function to play the MP3 File
     def __play_mp3_file(self):
-        pass
+        self.handler.start_playing_mp3_file()
     
     # Function to display an image
     def display_image(self, image):
@@ -76,3 +74,6 @@ class DaCapo_View(ttk.Frame):
     def delete_loading_window(self):
         self.loading_window.destroy()
         self.loading_window = None
+        
+    def error_message(self, message):
+        messagebox.showerror("Error", "The following error has ocurred: " + str(message))

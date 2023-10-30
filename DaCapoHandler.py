@@ -7,6 +7,8 @@ from PIL import ImageTk, Image
 import librosa
 from sound_to_midi.monophonic import wave_to_midi
 import time
+import pygame
+import mido
 
 
 class DaCapo_Handler:
@@ -26,6 +28,7 @@ class DaCapo_Handler:
         # Load the image using Tkinter
         image = self.__create_image(self.score_pages_paths[0][0])
         
+        self.music_sheet_midi_path = "./midiFiles/midiPartitura.mid"
         self.dacapo_view.delete_loading_window()
         self.dacapo_view.display_image(image)
     
@@ -42,10 +45,28 @@ class DaCapo_Handler:
         with open (file_out, 'wb') as f:
             midi.writeFile(f)
         print("Archivo Guardado")
+        self.mp3_path = file_path
+        self.midi_mp3_path = file_out
         self.dacapo_view.delete_loading_window()
         self.dacapo_view.create_loading_window("El archivo ha sido cargado con exito!")
         time.sleep(1)
         self.dacapo_view.delete_loading_window()
+    
+    def start_playing_mp3_file(self):
+        
+        midi_music_sheet = mido.MidiFile(self.midi_partitura_path)
+        midi_mp3 = mido.MidiFile(self.midi_mp3_path)
+        
+        self.__play_mp3_file(self.mp3_path)
+        
+        while (pygame.mixer.music.get_busy() and True ): #Falta medir si quedan compases en ambos midis
+            pygame.time.Clock().tick(10)
+    
+    def __play_mp3_file(self, mp3_path):
+        pygame.mixer.init()
+        pygame.mixer.music.load(mp3_path)
+        pygame.mixer.music.set_volume(1.0)
+        pygame.mixer.music.play()
     
     #Function that receives a list of score pages and creates 
     def __create_png_list_scores(self, score_pages, measures_per_page):
@@ -120,15 +141,31 @@ class DaCapo_Handler:
     def __write_score_to_midi(self, score, output_filename):
         # Write the MIDI file
         score.write('midi', output_filename)
+        
         #Sets the default BPM to be 120
         self.score_bpm = 120
+        
+        # Extract time signature information
+        time_signatures = None
+        
         for element in score.flat:
             if isinstance(element, tempo.MetronomeMark):
                 #Sets bpm to be the one written in the score
                 self.score_bpm  = element.number
+            if 'TimeSignature' in element.classes:
+                #Sets the time signature of the song
+                time_signatures = ({
+                    "numerator": element.numerator,
+                    "denominator": element.denominator
+                })
+        
+        if not time_signatures:
+            self.measure_seconds = 60.0 / self.score_bpm * 4 #Default measure seconds is set to 4 beats per measure
+        else:
+            #Sets the measure seconds according to the BPM and the time signature given by the musicxml file
+            self.measure_seconds = 60.0 / self.score_bpm * (time_signatures['numerator'] / time_signatures['denominator']) * time_signatures['numerator']
 
         self.midi_partitura_path = output_filename
-        #self.midi_partitura = 
     
     #Deletes all files that aren't pngs in the ImagePages folder
     def __delete_files_except_png(self, folder_path):
@@ -172,3 +209,36 @@ class DaCapo_Handler:
         
         return img
         
+        
+    def split_midi_by_duration(input_midi_path, duration, measures_per_page):
+        midi_file = midi.MidiFile(input_midi_path)
+
+        current_time = 0
+        current_track = []
+        output_tracks = []
+        for i, msg in enumerate(midi_file.play()):
+            current_time += msg.time
+            if(msg.type == 'note_on'):
+                current_track.append(msg)
+
+            if current_time >= duration:
+                output_midi_track = current_track
+                output_tracks.append(output_midi_track)
+                current_time = 0
+                current_track = []
+
+
+        result = []
+        current_subarray = []
+
+        for element in output_tracks:
+            current_subarray.append(element)
+
+            if len(current_subarray) == measures_per_page:
+                result.append(current_subarray)
+                current_subarray = []
+
+        if current_subarray:
+            result.append(current_subarray)
+
+        return result

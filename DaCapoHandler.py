@@ -19,7 +19,7 @@ class DaCapo_Handler:
         self.dacapo_view.create_loading_window("Cargando...")
         self.score = music21.converter.parse(file_path)
         self.__write_score_to_midi(self.score, './midiFiles/midiPartitura.mid')
-        measures_per_page = 20
+        measures_per_page = 30
         self.score_pages = self.__divide_musicxml_in_pages(self.score, measures_per_page)
         self.score_pages_paths = self.__create_png_list_scores(self.score_pages, measures_per_page)    
     

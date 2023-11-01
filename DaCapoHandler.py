@@ -28,7 +28,7 @@ class DaCapo_Handler:
         self.__write_score_to_midi(self.score, self.music_sheet_midi_path)
         
         #We select the amount of measures to be shown per page
-        self.measures_per_page = 30
+        self.measures_per_page = 20
         
         self.music_sheet_midi_splits = self.__split_midi_by_duration(self.music_sheet_midi_path, self.measure_seconds, self.measures_per_page)
         
@@ -45,7 +45,7 @@ class DaCapo_Handler:
         self.dacapo_view.display_image(image)
     
     def retrieve_mp3_file(self, file_path):
-        if not (self.music_sheet_midi_path):
+        if not hasattr(self, "music_sheet_midi_splits"):
             self.dacapo_view.error_message("No se ha cargado una partitura aun.")
             return 0
 
@@ -56,7 +56,7 @@ class DaCapo_Handler:
         print("Archivo MP3 Cargado")
         
         self.dacapo_view.delete_loading_window()
-        self.dacapo_view.create_loading_window("Convirtiendo archivo MP3...")
+        self.dacapo_view.create_loading_window("Procesando archivo...")
         
         midi = wave_to_midi(y, sr)
         print("Conversion Terminada")
@@ -64,8 +64,6 @@ class DaCapo_Handler:
             midi.writeFile(f)
             
         print("Archivo Guardado")
-        self.dacapo_view.delete_loading_window()
-        self.dacapo_view.create_loading_window("Procesando archivo...")
         
         mp3_midi_splits = self.__split_midi_by_duration(file_out ,self.measure_seconds, self.measures_per_page)
         self.mp3_midi_splits = mp3_midi_splits
@@ -77,16 +75,48 @@ class DaCapo_Handler:
     
     def start_playing_mp3_file(self):
         
-        if not self.mp3_midi_splits and not self.music_sheet_midi_splits:
+        if not hasattr(self, "mp3_midi_splits") or not hasattr(self, "music_sheet_midi_splits"):
             self.dacapo_view.error_message("Primero debe cargar la partitura y el archivo mp3.")
             return 0
             
-        
+        a = self.mp3_midi_splits
+        a2 = self.music_sheet_midi_splits
         self.__play_mp3_file(self.mp3_path)
+        time_start_measure = time.time()
         
-        while (pygame.mixer.music.get_busy() and True ): #Falta medir si quedan compases en ambos midis
-            pygame.time.Clock().tick(10)
-    
+        current_page = 0
+        current_measure = 1
+        
+        while (pygame.mixer.music.get_busy() and self.__safe_list_access(self.score_pages_paths, current_page, current_measure)  ): 
+            self.dacapo_view.display_image(self.__create_image(self.score_pages_paths[current_page][current_measure]))
+            if(current_measure >= self.measures_per_page):
+                current_measure = 1
+                current_page += 1
+            else:
+                current_measure += 1
+            
+            
+            current_time = time.time()
+            time_sleep = (time_start_measure + self.measure_seconds) - current_time
+            if(time_sleep > 0):
+                time.sleep(time_sleep)
+            
+            time_start_measure += self.measure_seconds
+
+        self.dacapo_view.display_image(self.__create_image(self.score_pages_paths[0][0]))
+      
+    def __safe_list_access(self, my_list, outer_index, inner_index):
+        if 0 <= outer_index < len(my_list):
+            inner_list = my_list[outer_index]
+            if 0 <= inner_index < len(inner_list):
+                # Both indices are within the valid range
+                value = inner_list[inner_index]
+                return value
+        # Handle the case where either the outer or inner index is out of range
+        return False  # You can choose another value or raise an exception here
+ 
+     
+        
     def __play_mp3_file(self, mp3_path):
         pygame.mixer.init()
         pygame.mixer.music.load(mp3_path)
@@ -235,7 +265,7 @@ class DaCapo_Handler:
         return img
         
         
-    def split_midi_by_duration(input_midi_path, duration, measures_per_page):
+    def __split_midi_by_duration(self, input_midi_path, duration, measures_per_page):
         try:
             midi_file = mido.MidiFile(input_midi_path)
         except FileNotFoundError:

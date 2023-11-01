@@ -13,7 +13,7 @@ class DaCapo_View(ttk.Frame):
         self.boton_musicXML.grid(row=0, column=0)
         
         logo_image = Image.open("DaCapoLogo.png")
-        logo_image = logo_image.resize(size=(400, 130))
+        logo_image = logo_image.resize(size=(200, 65))
 
         # Convert the PIL image to a Tkinter PhotoImage
         logo = ImageTk.PhotoImage(logo_image)
@@ -58,6 +58,9 @@ class DaCapo_View(ttk.Frame):
     
     # Function to display an image
     def display_image(self, image):
+        if hasattr(self, "image"):
+            self.image.image = None
+            self.image = None
         self.image = ttk.Label(self, image=image)
         self.image.grid(row=3, column=0, columnspan=3)
         self.image.image = image #Prevents the image from being garbage collected

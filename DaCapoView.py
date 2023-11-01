@@ -77,3 +77,6 @@ class DaCapo_View(ttk.Frame):
         
     def error_message(self, message):
         messagebox.showerror("Error", "The following error has ocurred: " + str(message))
+        
+    def info_message(self, message):
+        messagebox.showinfo("Info", message)

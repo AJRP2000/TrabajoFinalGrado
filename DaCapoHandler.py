@@ -18,44 +18,69 @@ class DaCapo_Handler:
     #(display_music_sheet)
     # Function to receive the path to a MusicXML file, save it as a Score and trigger display.
     def retrieve_musicXML_file(self, file_path):
-        self.dacapo_view.create_loading_window("Cargando...")
+        self.dacapo_view.create_loading_window("Cargando Archivo...")
         self.score = music21.converter.parse(file_path)
-        self.__write_score_to_midi(self.score, './midiFiles/midiPartitura.mid')
-        measures_per_page = 30
-        self.score_pages = self.__divide_musicxml_in_pages(self.score, measures_per_page)
-        self.score_pages_paths = self.__create_png_list_scores(self.score_pages, measures_per_page)    
+        
+        self.dacapo_view.delete_loading_window()
+        self.dacapo_view.create_loading_window("Procesando Archivo...")
+        
+        self.music_sheet_midi_path = "./midiFiles/midiPartitura.mid"
+        self.__write_score_to_midi(self.score, self.music_sheet_midi_path)
+        
+        #We select the amount of measures to be shown per page
+        self.measures_per_page = 30
+        
+        self.music_sheet_midi_splits = self.__split_midi_by_duration(self.music_sheet_midi_path, self.measure_seconds, self.measures_per_page)
+        
+        self.dacapo_view.delete_loading_window()
+        self.dacapo_view.create_loading_window("Creando Imagenes de la Partitura...")
+        
+        self.score_pages = self.__divide_musicxml_in_pages(self.score, self.measures_per_page)
+        self.score_pages_paths = self.__create_png_list_scores(self.score_pages, self.measures_per_page)    
     
         # Load the image using Tkinter
         image = self.__create_image(self.score_pages_paths[0][0])
         
-        self.music_sheet_midi_path = "./midiFiles/midiPartitura.mid"
         self.dacapo_view.delete_loading_window()
         self.dacapo_view.display_image(image)
     
     def retrieve_mp3_file(self, file_path):
+        if not (self.music_sheet_midi_path):
+            self.dacapo_view.error_message("No se ha cargado una partitura aun.")
+            return 0
+
         self.dacapo_view.create_loading_window("Cargando Archivo Mp3...")
         file_in = file_path
         file_out = "./midiFiles/midiAudio.mid"
         y, sr = librosa.load(file_in, sr=None)
         print("Archivo MP3 Cargado")
+        
         self.dacapo_view.delete_loading_window()
-        self.dacapo_view.create_loading_window("Procesando archivo...")
+        self.dacapo_view.create_loading_window("Convirtiendo archivo MP3...")
+        
         midi = wave_to_midi(y, sr)
         print("Conversion Terminada")
         with open (file_out, 'wb') as f:
             midi.writeFile(f)
+            
         print("Archivo Guardado")
+        self.dacapo_view.delete_loading_window()
+        self.dacapo_view.create_loading_window("Procesando archivo...")
+        
+        mp3_midi_splits = self.__split_midi_by_duration(file_out ,self.measure_seconds, self.measures_per_page)
+        self.mp3_midi_splits = mp3_midi_splits
+        
         self.mp3_path = file_path
         self.midi_mp3_path = file_out
         self.dacapo_view.delete_loading_window()
-        self.dacapo_view.create_loading_window("El archivo ha sido cargado con exito!")
-        time.sleep(1)
-        self.dacapo_view.delete_loading_window()
+        self.dacapo_view.info_message("El archivo ha sido cargado con exito!")
     
     def start_playing_mp3_file(self):
         
-        midi_music_sheet = mido.MidiFile(self.midi_partitura_path)
-        midi_mp3 = mido.MidiFile(self.midi_mp3_path)
+        if not self.mp3_midi_splits and not self.music_sheet_midi_splits:
+            self.dacapo_view.error_message("Primero debe cargar la partitura y el archivo mp3.")
+            return 0
+            
         
         self.__play_mp3_file(self.mp3_path)
         
@@ -210,8 +235,8 @@ class DaCapo_Handler:
         return img
         
         
-    def split_midi_by_duration(input_midi_path, duration, measures_per_page):
-        midi_file = midi.MidiFile(input_midi_path)
+    def __split_midi_by_duration(self, input_midi_path, duration, measures_per_page):
+        midi_file = mido.MidiFile(input_midi_path)
 
         current_time = 0
         current_track = []
@@ -224,7 +249,7 @@ class DaCapo_Handler:
             if current_time >= duration:
                 output_midi_track = current_track
                 output_tracks.append(output_midi_track)
-                current_time = 0
+                current_time = current_time - duration
                 current_track = []
 
 

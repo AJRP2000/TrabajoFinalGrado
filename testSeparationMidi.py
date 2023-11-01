@@ -18,7 +18,7 @@ def split_midi_by_duration(input_midi_path, duration, measures_per_page):
         if current_time >= duration:
             output_midi_track = current_track
             output_tracks.append(output_midi_track)
-            current_time = 0
+            current_time = current_time - duration
             current_track = []
 
 
@@ -39,4 +39,4 @@ def split_midi_by_duration(input_midi_path, duration, measures_per_page):
 
 if __name__ == "__main__":
     input_midi_path = "./midiFiles/midiPartitura.mid"  # Replace with your input MIDI file path
-    split_midi_by_duration(input_midi_path, duration=3, measures_per_page=30)
+    split_midi_by_duration(input_midi_path, duration=2.727272727272727, measures_per_page=30)

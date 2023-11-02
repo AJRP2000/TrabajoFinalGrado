@@ -30,7 +30,7 @@ class DaCapo_Handler:
         #We select the amount of measures to be shown per page
         self.measures_per_page = 20
         
-        self.music_sheet_midi_splits = self.__split_midi_by_duration(self.music_sheet_midi_path, self.measure_seconds, self.measures_per_page)
+        self.music_sheet_midi_splits = self.__split_midi_by_duration(self.music_sheet_midi_path, self.beats_per_measure, self.measures_per_page)
         
         self.dacapo_view.delete_loading_window()
         self.dacapo_view.create_loading_window("Creando Imagenes de la Partitura...")
@@ -65,7 +65,7 @@ class DaCapo_Handler:
             
         print("Archivo Guardado")
         
-        mp3_midi_splits = self.__split_midi_by_duration(file_out ,self.measure_seconds, self.measures_per_page)
+        mp3_midi_splits = self.__split_midi_by_duration(file_out ,self.beats_per_measure, self.measures_per_page)
         self.mp3_midi_splits = mp3_midi_splits
         
         self.mp3_path = file_path
@@ -79,8 +79,11 @@ class DaCapo_Handler:
             self.dacapo_view.error_message("Primero debe cargar la partitura y el archivo mp3.")
             return 0
             
-        a = self.mp3_midi_splits
-        a2 = self.music_sheet_midi_splits
+        mp3_midi_splits = self.mp3_midi_splits
+        music_sheet_midi_splits = self.music_sheet_midi_splits
+        error_margin = 3 #The algorithm used to transform the mp3 file to a midi is not accurate and tends to deviate the notes up or down.
+        percentage_required = 0.5 #At least 50% of the notes in the mp3 file must match in each measure
+        
         self.__play_mp3_file(self.mp3_path)
         time_start_measure = time.time()
         
@@ -88,6 +91,13 @@ class DaCapo_Handler:
         current_measure = 1
         
         while (pygame.mixer.music.get_busy() and self.__safe_list_access(self.score_pages_paths, current_page, current_measure)  ): 
+            current_measure_mp3 = mp3_midi_splits[current_page][current_measure-1]
+            current_measure_music_sheet = music_sheet_midi_splits[current_page][current_measure-1]
+            if not self.__compare_notes_between_two_arrays(current_measure_mp3, current_measure_music_sheet, error_margin, percentage_required):
+                pygame.mixer.music.stop()
+                self.dacapo_view.error_message("Los compases no concuerdan.")
+                break
+            
             self.dacapo_view.display_image(self.__create_image(self.score_pages_paths[current_page][current_measure]))
             if(current_measure >= self.measures_per_page):
                 current_measure = 1
@@ -110,12 +120,27 @@ class DaCapo_Handler:
             inner_list = my_list[outer_index]
             if 0 <= inner_index < len(inner_list):
                 # Both indices are within the valid range
-                value = inner_list[inner_index]
-                return value
-        # Handle the case where either the outer or inner index is out of range
-        return False  # You can choose another value or raise an exception here
+                return True
+            
+        return False  #It's not a valid range 
  
-     
+    def __compare_notes_between_two_arrays(self, array_being_compared, array_to_be_compared_to, error_margin, similarity_percentage_required):
+        hits = 0
+        maximum = len(array_being_compared)
+        for value1 in array_being_compared:
+            for value2 in array_to_be_compared_to:
+                if abs(value1 - value2) <= error_margin:
+                    hits += 1
+                    break
+            
+        if(maximum <= 0):
+            return True
+        
+        percentage_of_hits = hits/maximum
+        if(percentage_of_hits >= similarity_percentage_required):
+            return True
+        
+        return False
         
     def __play_mp3_file(self, mp3_path):
         pygame.mixer.init()
@@ -199,6 +224,8 @@ class DaCapo_Handler:
         
         #Sets the default BPM to be 120
         self.score_bpm = 120
+        #Set beats per measure to be 4 by default
+        self.beats_per_measure = 4
         
         # Extract time signature information
         time_signatures = None
@@ -219,6 +246,7 @@ class DaCapo_Handler:
         else:
             #Sets the measure seconds according to the BPM and the time signature given by the musicxml file
             self.measure_seconds = 60.0 / self.score_bpm * (time_signatures['numerator'] / time_signatures['denominator']) * time_signatures['numerator']
+            self.beats_per_measure = time_signatures['numerator']
 
         self.midi_partitura_path = output_filename
     
@@ -265,7 +293,7 @@ class DaCapo_Handler:
         return img
         
         
-    def __split_midi_by_duration(self, input_midi_path, duration, measures_per_page):
+    def __split_midi_by_duration(self, input_midi_path, beats_per_measure, measures_per_page):
         try:
             midi_file = mido.MidiFile(input_midi_path)
         except FileNotFoundError:
@@ -273,7 +301,7 @@ class DaCapo_Handler:
             return
 
         ticks_per_beat = midi_file.ticks_per_beat
-        ticks_per_measure = int(ticks_per_beat * duration)
+        ticks_per_measure = int(ticks_per_beat * beats_per_measure)
 
         current_tick = 0
         current_track = []
@@ -281,10 +309,10 @@ class DaCapo_Handler:
         for msg in midi_file.tracks[1]:
             current_tick += msg.time
             
-            if current_tick >= duration:
+            if current_tick >= ticks_per_measure:
                 output_midi_track = current_track
                 output_tracks.append(output_midi_track)
-                current_tick = current_tick - ticks_per_measure
+                current_tick = 0
                 current_track = []
                 
             if(msg.type == 'note_on'):

@@ -43,16 +43,24 @@ def split_midi_by_duration(input_midi_path, duration, measures_per_page):
 
 def compare_notes_between_two_arrays(array_being_compared, array_to_be_compared_to, error_margin, similarity_percentage_required):
         hits = 0
-        maximum = len(array_being_compared)
-        for value1 in array_being_compared:
-            for value2 in array_to_be_compared_to:
-                if abs(value1 - value2) <= error_margin:
-                    hits += 1
-                    break
-            
+        if(len(array_being_compared)> len(array_to_be_compared_to)):
+            maximum = len(array_to_be_compared_to)
+            for value1 in array_to_be_compared_to:
+                for value2 in array_being_compared:
+                    if abs(value1 - value2) <= error_margin:
+                        hits += 1
+                        break
+        else:
+            maximum = len(array_being_compared)
+            for value1 in array_being_compared:
+                for value2 in array_to_be_compared_to:
+                    if abs(value1 - value2) <= error_margin:
+                        hits += 1
+                        break
+                
         if(maximum <= 0):
             return True
-        
+            
         percentage_of_hits = hits/maximum
         if(percentage_of_hits >= similarity_percentage_required):
             return True
@@ -69,7 +77,7 @@ def safe_list_access(my_list, outer_index, inner_index):
     return False
 
 if __name__ == "__main__":
-    input_midi_path = "./midiFiles/midiPartitura.mid" 
+    input_midi_path = "./midiFiles/midiPartitura.mid"  
     music_sheet_midi_splits=split_midi_by_duration(input_midi_path, duration=4, measures_per_page=15)
     input_midi_path2 = "./midiFiles/midiAudio.mid"
     mp3_midi_splits=split_midi_by_duration(input_midi_path2, duration=4, measures_per_page=15)
@@ -77,7 +85,7 @@ if __name__ == "__main__":
     
     current_page = 0
     current_measure = 1
-    error_margin = 3
+    error_margin = 9
     percentage_required = 0.5
     
     #Testing Algorithm of comparison

@@ -80,6 +80,8 @@ class DaCapo_View(ttk.Frame):
         3. Presionar el boton de reproducir audio.
         
         Si durante el uso de la aplicación se desea probar con otra partitura, hará falta empezar desde el punto 1. Si desea solamente sustituir el audio, basta con empezar desde el punto 2. Siempre debe subir la partitura primero al archivo MP3.
+        
+        Restricciones: Esta aplicacion solo puede procesar partituras monofonicas que usen un solo instrumento. Solo funciona con canciones que sean ejecutadas de manera perfecta y generadas por audio digital.
         """
 
         text_widget.insert(tk.END, long_message)

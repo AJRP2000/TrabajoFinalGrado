@@ -28,7 +28,7 @@ class DaCapo_Handler:
         self.__write_score_to_midi(self.score, self.music_sheet_midi_path)
         
         #We select the amount of measures to be shown per page
-        self.measures_per_page = 15
+        self.measures_per_page = 10
         
         self.music_sheet_midi_splits = self.__split_midi_by_duration(self.music_sheet_midi_path, self.beats_per_measure, self.measures_per_page)
         
@@ -220,7 +220,7 @@ class DaCapo_Handler:
         
     
     #Receives a score and divides it into pages based on the measure number
-    def __divide_musicxml_in_pages(self, score, measures_per_page = 15):
+    def __divide_musicxml_in_pages(self, score, measures_per_page = 10):
         
         # Split the score into pages
         parts = score.getElementsByClass('Part')

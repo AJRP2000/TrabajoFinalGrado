@@ -25,7 +25,7 @@ class DaCapo_View(ttk.Frame):
         self.boton_mp3 = ttk.Button(self, text="Open MP3 File", command=self.__select_mp3_file)
         self.boton_mp3.grid(row=0, column=2)
         
-        self.label_prototype = ttk.Label(self, text='The current version is a prototype. Many functions are yet to be implemented. As of now the app can only function if the MusicXML file and the mp3 file have the same bpm.')
+        self.label_prototype = ttk.Label(self, text='The current version is a prototype.As of now the app only functions if the MusicXML file and the mp3 file have the same bpm.')
         self.label_prototype.grid(row=1, column=0, columnspan=3)    
         
         self.boton_tutorial = ttk.Button(self, text="Mostrar Tutorial", command=self.__mostrar_tutorial)

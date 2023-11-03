@@ -10,7 +10,7 @@ class App(tk.Tk):
         # Set the root window size to match the screen
         self.geometry(f"{screen_width}x{screen_height}")
         
-        self.title('Tkinter MVC Demo')
+        self.title('DaCapo Demo')
         
         view = DaCapo_View(self)
         view.grid(row=0, column=0)
